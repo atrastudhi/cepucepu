@@ -1,11 +1,14 @@
 const Twit = require('twit');
 const dotenv = require('dotenv');
 const express = require('express');
+const cors = require('cors');
 
 const app = express();
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+
+app.use(cors());
 
 dotenv.config();
 
@@ -55,6 +58,7 @@ let filter = (list) => {
 
 app.get('/:username', async (req, res) => {
     try {
+        console.log(`hit ${req.params.username}`)
         let memberMentions = [];
 
         let counter = 1;
@@ -62,7 +66,7 @@ app.get('/:username', async (req, res) => {
 
         while (counter < 6) {
             let tweets = await fetchTweet(req.params.username, max_id);
-
+            
             if (tweets.length > 1) {
                 for (let i = 1; i < tweets.length; i++) {
 
@@ -81,16 +85,17 @@ app.get('/:username', async (req, res) => {
                 counter = 6;
             }
 
+            console.log(tweets.length)
         }
-
+        
         let rank = filter(memberMentions);
 
         rank.sort((a, b) => b.count - a.count);
         
-        res.status(200).json(rank);
+        res.status(200).json(rank.slice(0, 3));
     } catch (err) {
         res.status(500).json(err);
     }
 })
 
-app.listen(3000);
+app.listen(8080);
